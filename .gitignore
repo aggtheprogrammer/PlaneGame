@@ -1,0 +1,51 @@
+ # Unity generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild*/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+sysinfo.txt
+
+# Visual Studio / VSCode
+.vscode/
+*.csproj
+*.sln
+*.user
+*.unityproj
+*.pidb
+*.booproj
+*.svd
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Crash reports
+*.stackdump
+
+# Rider
+.idea/
+
+# Plastic SCM
+.plastic/
+
+# Build output
+Builds/
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild*/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+sysinfo.txt
+
+.vscode/
+*.csproj
+*.sln
+.idea/
+.plastic/
+
+
