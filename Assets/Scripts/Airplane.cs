@@ -6,30 +6,28 @@ public class Airplane : MonoBehaviour
     public float delay = 1.5f;
     public KeyCode manualKey = KeyCode.Space;
 
-    //nose up
-    public float maxPitch = 20f;      // how high to tilt the nose
-    public float pitchSpeed = 25f;    // deg/sec
+    //take off
+    public float maxPitch = 20f;        // nose tilt degrees
+    public float pitchSpeed = 25f;      // deg/sec
+    public float targetAltitude = 8f;   
+    public float climbSpeed = 2f;      
 
-    public float targetAltitude = 8f;
-    public float climbSpeed = 2f;
-
-    //during take off
+    //level flight and bob motion
+    public float maxTime = 6;         // seconds before leveling
     public bool keepSmallBob = true;
     public float bobAmp = 0.2f;
     public float bobFreq = 1.2f;
 
-    //leveling off time
-    public float maxTime = 10f;       // seconds before leveling out
 
-    float startY;
-    float timer;
-    bool started;
-    bool leveled;
-    float currentPitch;
+    private Vector3 startPos;           // stores the full starting position (x,y,z)
+    private float timer;
+    private bool started;
+    private bool leveled;
+    private float currentPitch;
 
     void Start()
     {
-        startY = transform.position.y;
+        startPos = transform.position;  // keep full 3D start position
         timer = 0f;
     }
 
@@ -37,6 +35,7 @@ public class Airplane : MonoBehaviour
     {
         timer += Time.deltaTime;
 
+        // Wait for auto or manual start
         if (!started)
         {
             if ((autoStart && timer >= delay) || (!autoStart && Input.GetKeyDown(manualKey)))
@@ -45,33 +44,35 @@ public class Airplane : MonoBehaviour
                 return;
         }
 
-        if (started && !leveled) // taking off
+        if (started && !leveled)
         {
             // tilt nose UP 
-            currentPitch = Mathf.MoveTowards(currentPitch, -maxPitch, pitchSpeed * Time.deltaTime);
+            currentPitch = Mathf.MoveTowards(currentPitch, maxPitch, pitchSpeed * Time.deltaTime);
 
-            // climb upward
-            float targetY = startY + targetAltitude;
+            // climb upward smoothly relative to start Y
+            float targetY = startPos.y + targetAltitude;
             float newY = Mathf.MoveTowards(transform.position.y, targetY, climbSpeed * Time.deltaTime);
-            transform.position = new Vector3(transform.position.x, newY, transform.position.z);
 
-            // after maxTime, start leveling
+            transform.position = new Vector3(startPos.x, newY, startPos.z);
+
+            // after maxTime, begin leveling off
             if (timer >= delay + maxTime)
                 leveled = true;
         }
-        
         else
         {
+            // return nose to level
             currentPitch = Mathf.MoveTowards(currentPitch, 0f, pitchSpeed * Time.deltaTime);
 
+            // optional small floating motion once leveled
             if (keepSmallBob)
             {
-                float y = startY + targetAltitude +
+                float y = startPos.y + targetAltitude +
                           Mathf.Sin(Time.time * Mathf.PI * 2f * bobFreq) * bobAmp;
-                transform.position = new Vector3(transform.position.x, y, transform.position.z);
+                transform.position = new Vector3(startPos.x, y, startPos.z);
             }
         }
 
-        transform.rotation = Quaternion.Euler(currentPitch, 0f, 0f);
+        transform.rotation = Quaternion.Euler(-currentPitch, transform.rotation.eulerAngles.y, 0f);
     }
 }
