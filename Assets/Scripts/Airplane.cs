@@ -24,7 +24,7 @@ public class Airplane : MonoBehaviour
     private bool started;
     private bool leveled;
     private float currentPitch;
-
+//tesr
     void Start()
     {
         startPos = transform.position;  // keep full 3D start position
