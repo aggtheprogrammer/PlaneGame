@@ -4076,6 +4076,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1c71f6bb8fe3e5148be65be1d4fd6b9f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1662262742}
+    - targetCorrespondingSourceObject: {fileID: 2433934699794552271, guid: 1c71f6bb8fe3e5148be65be1d4fd6b9f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1948134325}
   m_SourcePrefab: {fileID: 100100000, guid: 1c71f6bb8fe3e5148be65be1d4fd6b9f, type: 3}
 --- !u!1 &1745735139
 GameObject:
@@ -4912,6 +4915,32 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1915381032}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1948134321 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2433934699794552271, guid: 1c71f6bb8fe3e5148be65be1d4fd6b9f, type: 3}
+  m_PrefabInstance: {fileID: 1737537315}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1948134325
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1948134321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 146f3b61fbc0631448ebce6527acffb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  forwardSpeed: 800
+  acceleration: 5
+  maxForwardSpeed: 9000
+  moveDuration: 10
+  takeoffDelay: 1.5
+  climbSpeed: 2.5
+  pitchSpeed: 15
+  maxPitch: 25
+  flightDuration: 12
 --- !u!1 &2060723193
 GameObject:
   m_ObjectHideFlags: 0
