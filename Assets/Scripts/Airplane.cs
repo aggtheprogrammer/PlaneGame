@@ -5,12 +5,12 @@ public class Airplane : MonoBehaviour
     public EnvironmentMover envMover;
 
     // take off
-    private const float takeoffDelay = 1.0f;    // nose up begins at 1 s
+    private const float takeoffDelay = 0.01f;    // nose up begins at 0.01 s
     private const float maxPitch = 25f;
-    private const float climbSpeed = 3.2f;
+    private const float climbSpeed = 3f;
     private const float pitchSpeed = 14f;
     private const float targetAltitude = 18f;
-    private const float maxTime = 13.5f;
+    private const float maxTime = 20f;
 
     private Vector3 startPos;
     private float timer;
@@ -19,17 +19,20 @@ public class Airplane : MonoBehaviour
     private float currentPitch;
 
     void Start()
-    {
-        // automatically find EnvironmentMover in the scene if not linked
-        if (envMover == null)
-            envMover = FindObjectOfType<EnvironmentMover>();
+{
+    startPos = transform.position;
+    timer = 0f;
+    Time.timeScale = 1f;
+    begunPitch = true;
+    leveled = false;
 
-        startPos = transform.position;
-        timer = 0f;
-        Time.timeScale = 1f;
-        begunPitch = false;
-        leveled = false;
-    }
+    // trigger pitch immediately
+    begunPitch = true;
+    if (envMover == null)
+        envMover = FindObjectOfType<EnvironmentMover>();
+    if (envMover != null)
+        envMover.StartDescending();
+}
 
     void Update()
     {
@@ -62,9 +65,11 @@ public class Airplane : MonoBehaviour
             float newY = Mathf.MoveTowards(transform.position.y, targetY, climbSpeed * Time.deltaTime);
             transform.position = new Vector3(startPos.x, newY, startPos.z);
 
-            // after maxTime, begin leveling off
-            if (timer >= takeoffDelay + maxTime)
+            // after reaching max pitch, hold it for a few seconds before leveling off
+            float holdDuration = 5f; // seconds to stay at this angle
+            if (timer >= takeoffDelay + maxTime + holdDuration)
                 leveled = true;
+
         }
         else if (leveled)
         {

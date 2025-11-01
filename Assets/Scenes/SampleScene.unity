@@ -699,50 +699,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 128973804}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
---- !u!1 &192880713
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 192880715}
-  - component: {fileID: 192880714}
-  m_Layer: 0
-  m_Name: MoveTest
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &192880714
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 192880713}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ff391be03a1a03749aae694c0c97e0d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!4 &192880715
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 192880713}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -590.38153, y: 253.31952, z: -432.51993}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &197072648
 GameObject:
   m_ObjectHideFlags: 0
@@ -3990,10 +3946,10 @@ MonoBehaviour:
   airplane: {fileID: 0}
   airplaneScript: {fileID: 0}
   speed: 800
-  acceleration: 15
+  acceleration: 10
   maxSpeed: 9000
-  fallAcceleration: 30
-  maxFallSpeed: 40
+  fallAcceleration: 10
+  maxFallSpeed: 16
   fallStartDelay: 0
 --- !u!1001 &1737537315
 PrefabInstance:
@@ -5120,4 +5076,3 @@ SceneRoots:
   - {fileID: 832575519}
   - {fileID: 2109392157}
   - {fileID: 879469358}
-  - {fileID: 192880715}
