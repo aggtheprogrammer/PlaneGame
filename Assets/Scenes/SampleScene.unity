@@ -699,6 +699,50 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 128973804}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &192880713
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 192880715}
+  - component: {fileID: 192880714}
+  m_Layer: 0
+  m_Name: MoveTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &192880714
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 192880713}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ff391be03a1a03749aae694c0c97e0d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &192880715
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 192880713}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -590.38153, y: 253.31952, z: -432.51993}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &197072648
 GameObject:
   m_ObjectHideFlags: 0
@@ -2265,20 +2309,19 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 879469356}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 90c99d381b0ec1d408fb69c970d67771, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  airplane: {fileID: 2109392157}
-  descendDelay: 3
-  speed: 800
-  acceleration: 30
-  maxSpeed: 9000
-  fallSpeed: 0
-  fallAcceleration: 5
-  maxFallSpeed: 8
-  verticalOffset: 6
+  airplane: {fileID: 0}
+  airplaneScript: {fileID: 0}
+  speed: 10
+  acceleration: 3
+  maxSpeed: 60
+  fallAcceleration: 30
+  maxFallSpeed: 40
+  fallStartDelay: 0
 --- !u!4 &879469358
 Transform:
   m_ObjectHideFlags: 0
@@ -2288,7 +2331,7 @@ Transform:
   m_GameObject: {fileID: 879469356}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -590.38153, y: 253.31952, z: -432.51993}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3927,6 +3970,31 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1580829307}
   m_Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &1662262741 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1c71f6bb8fe3e5148be65be1d4fd6b9f, type: 3}
+  m_PrefabInstance: {fileID: 1737537315}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1662262742
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1662262741}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90c99d381b0ec1d408fb69c970d67771, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  airplane: {fileID: 0}
+  airplaneScript: {fileID: 0}
+  speed: 800
+  acceleration: 15
+  maxSpeed: 9000
+  fallAcceleration: 30
+  maxFallSpeed: 40
+  fallStartDelay: 0
 --- !u!1001 &1737537315
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4039,12 +4107,19 @@ PrefabInstance:
       propertyPath: m_Name
       value: _Airport-Turbosquid
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 1c71f6bb8fe3e5148be65be1d4fd6b9f, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 4256905643761103923, guid: 1c71f6bb8fe3e5148be65be1d4fd6b9f, type: 3}
     - {fileID: -7328874988677014453, guid: 1c71f6bb8fe3e5148be65be1d4fd6b9f, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1c71f6bb8fe3e5148be65be1d4fd6b9f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1662262742}
   m_SourcePrefab: {fileID: 100100000, guid: 1c71f6bb8fe3e5148be65be1d4fd6b9f, type: 3}
 --- !u!1 &1745735139
 GameObject:
@@ -4656,7 +4731,7 @@ Transform:
   m_GameObject: {fileID: 1892020579}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 865.27924, y: -200.84645, z: -94.042145}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5016,7 +5091,7 @@ Transform:
   m_GameObject: {fileID: 2109392156}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -2661, y: 0, z: 6}
+  m_LocalPosition: {x: -4970, y: -10, z: 537}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5036,19 +5111,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3a5151431693e504f9c1fe767e300c3b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  envMover: {fileID: 879469357}
-  autoStart: 1
-  delay: 1.5
-  noseUpDelay: 10
-  manualKey: 32
-  maxPitch: 20
-  pitchSpeed: 25
-  targetAltitude: 8
-  climbSpeed: 2
-  maxTime: 10
-  keepSmallBob: 1
-  bobAmp: 0.2
-  bobFreq: 1.2
+  envMover: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -5057,3 +5120,4 @@ SceneRoots:
   - {fileID: 832575519}
   - {fileID: 2109392157}
   - {fileID: 879469358}
+  - {fileID: 192880715}

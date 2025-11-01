@@ -2,50 +2,68 @@ using UnityEngine;
 
 public class EnvironmentMover : MonoBehaviour
 {
-    public Transform airplane;            // drag the Airbus here
+    public Transform airplane;          
+    public Airplane airplaneScript;     
 
-    public float descendDelay = 8f;       // start descending BEFORE nose-up (plane’s noseUpDelay = 10)
-    private float timer = 0f;
-    private bool descending = false;
-
-    // backward movement
+    // movement along runway X
     public float speed = 10f;
     public float acceleration = 3f;
     public float maxSpeed = 60f;
 
-    //downward movement
-    public float fallSpeed = 0f;
-    public float fallAcceleration = 3f;   
-    public float maxFallSpeed = 25f;      
-    public float verticalOffset = 4f;     // how far below the plane the environment should sit
+    // downward movement Y
+    public float fallAcceleration = 15f;
+    public float maxFallSpeed = 40f;
+    public float fallStartDelay = 0f;
+
+    private float currentFallSpeed = 0f;
+    private bool descending = false;
+    private float descendTimer = 0f;
+
+    void Start()
+    {
+        // if not manually assigned, try to auto-detect
+        if (airplane == null)
+        {
+            Airplane foundPlane = FindObjectOfType<Airplane>();
+            if (foundPlane != null)
+            {
+                airplane = foundPlane.transform;
+                airplaneScript = foundPlane;
+            }
+        }
+    }
 
     void Update()
     {
-        timer += Time.deltaTime;
-
-        // always move backwards
+        // accelerate movement along runway (X)
         if (speed < maxSpeed)
             speed += acceleration * Time.deltaTime;
 
+        // move runway backwards along X
         transform.Translate(Vector3.left * speed * Time.deltaTime, Space.World);
 
-        // trigger descent a bit earlier (8s)
-        if (!descending && timer >= descendDelay)
+        // check for airplane pitch-up if linked
+        if (airplaneScript != null && airplaneScript.IsPitchingUp())
             descending = true;
 
-        // follow plane’s height 
-        if (descending && airplane != null)
+        // handle descent
+        if (descending)
         {
-            float targetY = airplane.position.y - verticalOffset;
-            Vector3 pos = transform.position;
+            descendTimer += Time.deltaTime;
 
-            // move fast toward target Y
-            pos.y = Mathf.MoveTowards(pos.y, targetY, maxFallSpeed * Time.deltaTime);
-            transform.position = pos;
+            if (descendTimer >= fallStartDelay)
+            {
+                if (currentFallSpeed < maxFallSpeed)
+                    currentFallSpeed += fallAcceleration * Time.deltaTime;
+
+                // move downward along world Y axis
+                transform.Translate(Vector3.down * currentFallSpeed * Time.deltaTime, Space.World);
+            }
         }
     }
+
     public void StartDescending()
-{
-    descending = true;
-}
+    {
+        descending = true;
+    }
 }

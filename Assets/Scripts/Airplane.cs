@@ -4,13 +4,13 @@ public class Airplane : MonoBehaviour
 {
     public EnvironmentMover envMover;
 
-    //take off 
-    private const float takeoffDelay = 1.0f;    // nose-up begins at 1 s
+    // take off
+    private const float takeoffDelay = 1.0f;    // nose up begins at 1 s
     private const float maxPitch = 25f;
     private const float climbSpeed = 3.2f;
     private const float pitchSpeed = 14f;
     private const float targetAltitude = 18f;
-    private const float maxTime = 13.5f;        
+    private const float maxTime = 13.5f;
 
     private Vector3 startPos;
     private float timer;
@@ -20,6 +20,10 @@ public class Airplane : MonoBehaviour
 
     void Start()
     {
+        // automatically find EnvironmentMover in the scene if not linked
+        if (envMover == null)
+            envMover = FindObjectOfType<EnvironmentMover>();
+
         startPos = transform.position;
         timer = 0f;
         Time.timeScale = 1f;
@@ -35,13 +39,21 @@ public class Airplane : MonoBehaviour
         if (!begunPitch && timer >= takeoffDelay)
         {
             begunPitch = true;
+
             if (envMover != null)
+            {
                 envMover.StartDescending();
+                Debug.Log("✅ Airplane triggered environment descent!");
+            }
+            else
+            {
+                Debug.LogWarning("⚠️ No EnvironmentMover found!");
+            }
         }
 
         if (begunPitch && !leveled)
         {
-            // tilt nose up smoothly 
+            // tilt nose up smoothly
             float t = Mathf.Clamp01((timer - takeoffDelay) / maxTime);
             currentPitch = Mathf.Lerp(0f, maxPitch, t * t);
 
@@ -60,7 +72,13 @@ public class Airplane : MonoBehaviour
             currentPitch = Mathf.MoveTowards(currentPitch, 0f, pitchSpeed * Time.deltaTime);
         }
 
-        // apply rotation 
+        // apply rotation
         transform.rotation = Quaternion.Euler(-currentPitch, transform.rotation.eulerAngles.y, 0f);
+    }
+
+    // tell EnvironmentMover when nose up started
+    public bool IsPitchingUp()
+    {
+        return begunPitch && !leveled;
     }
 }
