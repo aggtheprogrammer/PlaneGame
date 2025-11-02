@@ -3945,7 +3945,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   airplane: {fileID: 0}
   airplaneScript: {fileID: 0}
-  speed: 800
+  speed: 880
   acceleration: 10
   maxSpeed: 9000
   fallAcceleration: 10
@@ -4932,15 +4932,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 146f3b61fbc0631448ebce6527acffb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  forwardSpeed: 800
-  acceleration: 5
-  maxForwardSpeed: 9000
-  moveDuration: 10
-  takeoffDelay: 1.5
-  climbSpeed: 2.5
-  pitchSpeed: 15
-  maxPitch: 25
-  flightDuration: 12
+  speed: 850
+  MoveDuration: 10
 --- !u!1 &2060723193
 GameObject:
   m_ObjectHideFlags: 0
