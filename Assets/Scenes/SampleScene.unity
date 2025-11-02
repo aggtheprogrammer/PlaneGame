@@ -2753,7 +2753,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ef08c6bd2585a704ebe3e4216d543592, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -75.1
+      value: -113
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: ef08c6bd2585a704ebe3e4216d543592, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3948,9 +3948,9 @@ MonoBehaviour:
   speed: 880
   acceleration: 10
   maxSpeed: 9000
-  fallAcceleration: 10
-  maxFallSpeed: 16
-  fallStartDelay: 0
+  fallAcceleration: 20
+  maxFallSpeed: 30
+  fallStartDelay: 1.4
 --- !u!1001 &1737537315
 PrefabInstance:
   m_ObjectHideFlags: 0
