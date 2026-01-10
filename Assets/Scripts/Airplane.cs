@@ -9,8 +9,8 @@ public class Airplane : MonoBehaviour
     public const float maxPitch = 25f;
     public const float climbSpeed = 20f; 
     public const float pitchSpeed = 14f;
-    public const float targetAltitude = 18f; 
-    public const float maxTime = 5f;
+    public const float targetAltitude = 10f; 
+    public const float maxTime = 6f;
     public float holdDuration = 1.5f;  // or 1f
 
 
