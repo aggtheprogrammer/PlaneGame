@@ -14,10 +14,23 @@ public class EnvironmentMover : MonoBehaviour
     public float fallAcceleration = 15f;
     public float maxFallSpeed = 40f;
     public float fallStartDelay = 0f;
+    public float startSpeedOnStart = 60f; 
+    public Vector3 moveDirection = new Vector3(0f, 0f, -1f); // world -Z (towards camera usually)
+    public Transform directionSource; 
+
 
     private float currentFallSpeed = 0f;
     private bool descending = false;
     private float descendTimer = 0f;
+    private bool running = false;
+
+    public void StartMoving()
+    {
+        running = true;
+        speed = startSpeedOnStart;   // instant "perfect" speed
+    }
+
+
 
     void Start()
     {
@@ -35,12 +48,19 @@ public class EnvironmentMover : MonoBehaviour
 
     void Update()
     {
+        if (!running)
+        return;
+
         // accelerate movement along runway (X)
         if (speed < maxSpeed)
             speed += acceleration * Time.deltaTime;
 
-        // move runway backwards along X
-        transform.Translate(Vector3.left * speed * Time.deltaTime, Space.World);
+        // move world backwards opposite of the airplane forward (on XZ plane only)
+        Vector3 dir = (directionSource != null) ? directionSource.forward : Vector3.forward;
+        dir.y = 0f; // IMPORTANT: no up/down
+        dir = dir.normalized;
+
+        transform.position += -dir * speed * Time.deltaTime;
 
         // check for airplane pitch-up if linked
         if (airplaneScript != null && airplaneScript.IsPitchingUp())

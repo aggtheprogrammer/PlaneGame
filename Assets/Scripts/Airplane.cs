@@ -5,12 +5,14 @@ public class Airplane : MonoBehaviour
     public EnvironmentMover envMover;
 
     // take off
-    private const float takeoffDelay = 0.01f;    
-    private const float maxPitch = 25f;
-    private const float climbSpeed = 6f;
-    private const float pitchSpeed = 14f;
-    private const float targetAltitude = 18f; 
-    private const float maxTime = 15f;
+    public const float takeoffDelay = 0.01f;    
+    public const float maxPitch = 25f;
+    public const float climbSpeed = 20f; 
+    public const float pitchSpeed = 14f;
+    public const float targetAltitude = 18f; 
+    public const float maxTime = 5f;
+    public float holdDuration = 1.5f;  // or 1f
+
 
     private Vector3 startPos;
     private float timer;
@@ -30,6 +32,9 @@ public class Airplane : MonoBehaviour
         envMover = FindObjectOfType<EnvironmentMover>();
     if (envMover != null)
         envMover.StartDescending();
+
+        Debug.Log("Airplane Start() ran!"); // for testing
+
 }
 
     void Update()
@@ -67,6 +72,10 @@ public class Airplane : MonoBehaviour
 
         // apply rotation
         transform.rotation = Quaternion.Euler(-currentPitch, transform.rotation.eulerAngles.y, 0f);
+
+        if (Time.frameCount % 60 == 0)
+            Debug.Log("Airplane Update running, y=" + transform.position.y); // for testing
+
     }
 
     // tell EnvironmentMover when nose up started
