@@ -20,12 +20,21 @@ public class Airplane : MonoBehaviour
     private bool leveled;
     private float currentPitch;
 
+    private float lockedYaw;
+    private float lockedRoll;
+
+
     void Start()
 {
-    startPos = transform.position;
+    startPos = transform.localPosition; // for Y reference only
     timer = 0f;
     Time.timeScale = 1f;
     leveled = false;
+
+    Vector3 startEuler = transform.eulerAngles;
+    lockedYaw = startEuler.y;
+    lockedRoll = startEuler.z;
+
 
     // trigger pitch immediately
     if (envMover == null)
@@ -33,7 +42,7 @@ public class Airplane : MonoBehaviour
     if (envMover != null)
         envMover.StartDescending();
 
-        Debug.Log("Airplane Start() ran!"); // for testing
+    Debug.Log("Airplane Start() ran!"); // for testing
 
 }
 
@@ -56,7 +65,10 @@ public class Airplane : MonoBehaviour
             // climb upward smoothly
             float targetY = startPos.y + targetAltitude;
             float newY = Mathf.MoveTowards(transform.position.y, targetY, climbSpeed * Time.deltaTime); 
-            transform.position = new Vector3(startPos.x, newY, startPos.z); 
+            Vector3 pos = transform.position;  // keep current X and Z (lane position)
+            pos.y = newY;                       // only change height
+            transform.position = pos;
+
 
             // after reaching max pitch, hold it for a few seconds before leveling off
             float holdDuration = 5f; // seconds to stay at this angle
@@ -71,7 +83,10 @@ public class Airplane : MonoBehaviour
         }
 
         // apply rotation
-        transform.rotation = Quaternion.Euler(-currentPitch, transform.rotation.eulerAngles.y, 0f);
+        Vector3 e = transform.eulerAngles; // keep current yaw + roll
+        transform.rotation = Quaternion.Euler(-currentPitch, lockedYaw, lockedRoll);
+
+
 
         if (Time.frameCount % 60 == 0)
             Debug.Log("Airplane Update running, y=" + transform.position.y); // for testing

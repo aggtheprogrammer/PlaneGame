@@ -3,11 +3,11 @@ using UnityEngine.EventSystems;
 
 public class SwipeLaneController : MonoBehaviour
 {
-    [Header("Move This (IMPORTANT)")]
+    [Header("Move This")]
     public Transform moveTarget;
 
     [Header("Lanes")]
-    public float laneOffset = 2.5f;
+    public float laneOffset = 400f;   // keep 400 if your scene scale needs it
     public int minLane = -1;
     public int maxLane = 1;
 
@@ -21,19 +21,47 @@ public class SwipeLaneController : MonoBehaviour
     [Header("Debug")]
     public bool debugLogs = true;
 
-    int lane = 0;
-    float baseLocalX;
-    float velX;
+    [Header("Lane Direction")]
+    public Transform forwardReference; // drag a RUNWAY forward marker / airport forward object here
+    public bool invertLanes = false;
 
+    [Header("Rotation Lock (optional)")]
+    public Transform rotationTarget;   // drag Airbus340 here
+    public bool lockYawRoll = true;
+
+    // state
+    int lane = 0;
     Vector2 startPos;
     float startTime;
     bool swiping;
 
-    Transform T => moveTarget != null ? moveTarget : transform;
+    float baseYaw;
+    float baseRoll;
+
+    Vector3 basePos;
+    Vector3 lateralVel;
+
+    [Header("Bank (tilt)")]
+    public float maxBankAngle = 12f;      // how much it tilts (degrees)
+    public float bankSmoothTime = 0.15f;   // how smooth the tilt is
+    public float bankFromError = 0.03f;   // how strong the tilt reacts to lane error
+
+    float bankVel;
+    float currentBank;
+
 
     void Start()
     {
-        baseLocalX = T.localPosition.x;
+        if (moveTarget == null) moveTarget = transform;
+
+        // lane 0 reference position
+        basePos = moveTarget.position;
+
+        if (rotationTarget == null)
+            rotationTarget = transform;
+
+        baseYaw = rotationTarget.localEulerAngles.y;
+        baseRoll = rotationTarget.localEulerAngles.z;
     }
 
     void Update()
@@ -41,13 +69,54 @@ public class SwipeLaneController : MonoBehaviour
         HandleSwipeInput();
     }
 
-    void LateUpdate()
+   void LateUpdate()
     {
-        // moves ONLY local X (lane switching)
-        Vector3 lp = T.localPosition;
-        float targetX = baseLocalX + lane * laneOffset;
-        lp.x = Mathf.SmoothDamp(lp.x, targetX, ref velX, lateralSmoothTime);
-        T.localPosition = lp;
+        if (moveTarget == null) return;
+
+        // Forward direction of the runway/world
+        Vector3 forward = forwardReference != null ? forwardReference.forward : Vector3.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
+        forward.Normalize();
+
+        // Sideways direction = perpendicular to forward (force perfectly horizontal)
+        Vector3 right = Vector3.Cross(forward, Vector3.up);
+
+        right.y = 0f;
+        right.Normalize();
+
+        if (invertLanes) 
+            right = -right;
+
+        // Target lane position (lock Y to the ORIGINAL lane root height)
+        Vector3 targetPos = basePos + right * (lane * laneOffset);
+        targetPos.y = basePos.y;
+
+        // Smooth move
+        Vector3 newPos = Vector3.SmoothDamp(moveTarget.position, targetPos, ref lateralVel, lateralSmoothTime);
+
+        // Hard lock Y + kill any Y velocity accumulation
+        newPos.y = basePos.y;
+        lateralVel.y = 0f;
+
+        moveTarget.position = newPos;
+
+        // ----- BANK (tilt) based on lane target (stable) -----
+        float desiredBank = -lane * maxBankAngle; // flip sign if it feels reversed
+        currentBank = Mathf.SmoothDampAngle(currentBank, desiredBank, ref bankVel, bankSmoothTime);
+
+        // When close enough, return bank to 0 smoothly
+        float distToTarget = Vector3.Distance(moveTarget.position, targetPos);
+
+        if (distToTarget < 5f)
+        currentBank = Mathf.SmoothDampAngle(currentBank, 0f, ref bankVel, bankSmoothTime);
+
+        // Apply bank ONLY to the visual (rotationTarget)
+        if (rotationTarget != null)
+        {
+            Vector3 e = rotationTarget.localEulerAngles;
+            rotationTarget.localEulerAngles = new Vector3(e.x, baseYaw, baseRoll + currentBank);
+        }
     }
 
     void HandleSwipeInput()
@@ -57,8 +126,8 @@ public class SwipeLaneController : MonoBehaviour
         {
             Touch t = Input.GetTouch(0);
 
-            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(t.fingerId))
-                return;
+            // if UI blocks you, keep commented while testing:
+            // if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(t.fingerId)) return;
 
             if (t.phase == TouchPhase.Began)
             {
@@ -74,9 +143,8 @@ public class SwipeLaneController : MonoBehaviour
             return;
         }
 
-        // mouse 
-        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
-            return;
+        // mouse
+        // if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -117,5 +185,13 @@ public class SwipeLaneController : MonoBehaviour
         int old = lane;
         lane = Mathf.Clamp(lane + 1, minLane, maxLane);
         if (debugLogs && lane != old) Debug.Log("Lane RIGHT -> " + lane);
+    }
+
+    // Call this after Start button if your objects teleport on start
+    public void RecenterLanes()
+    {
+        if (moveTarget == null) moveTarget = transform;
+        basePos = moveTarget.position;
+        lane = 0;
     }
 }
