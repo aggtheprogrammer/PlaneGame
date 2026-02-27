@@ -11,9 +11,10 @@ public class Airplane : MonoBehaviour
     public const float pitchSpeed = 14f;
     public const float targetAltitude = 10f; 
     public const float maxTime = 6f;
-    public float holdDuration = 1.5f;  // or 1f
+    public float holdDuration = 1.5f;
 
-
+    public SwipeLaneController laneController;
+    bool recentered;
     private Vector3 startPos;
     private float timer;
     private bool begunPitch;
@@ -41,6 +42,8 @@ public class Airplane : MonoBehaviour
         envMover = FindObjectOfType<EnvironmentMover>();
     if (envMover != null)
         envMover.StartDescending();
+    if (laneController == null)
+        laneController = GetComponentInParent<SwipeLaneController>();
 
     Debug.Log("Airplane Start() ran!"); // for testing
 
@@ -88,8 +91,15 @@ public class Airplane : MonoBehaviour
 
 
 
-        if (Time.frameCount % 60 == 0)
-            Debug.Log("Airplane Update running, y=" + transform.position.y); // for testing
+        //if (Time.frameCount % 60 == 0)
+           // Debug.Log("Airplane Update running, y=" + transform.position.y); // for testing
+
+        if (!recentered && transform.position.y >= (startPos.y + targetAltitude - 0.01f))
+    {
+        recentered = true;
+        if (laneController != null)
+            laneController.RecenterLanes();
+    }
 
     }
 

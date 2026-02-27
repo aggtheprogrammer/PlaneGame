@@ -6,192 +6,237 @@ public class SwipeLaneController : MonoBehaviour
     [Header("Move This")]
     public Transform moveTarget;
 
+    [Header("Reference Direction")]
+    public Transform forwardReference;  
+    public bool invertLanes = false;
+
     [Header("Lanes")]
-    public float laneOffset = 400f;   // keep 400 if your scene scale needs it
+    public float laneOffset = 400f;
     public int minLane = -1;
     public int maxLane = 1;
 
     [Header("Movement")]
     public float lateralSmoothTime = 0.08f;
 
-    [Header("Swipe")]
-    public float minSwipePixels = 80f;
-    public float maxSwipeTime = 0.35f;
+    [Header("Drag")]
+    public float dragSensitivity = 1.0f; 
+    public bool snapToLaneOnRelease = true; // if false, will keep the free position instead of snapping to nearest lane on drag end
 
     [Header("Debug")]
     public bool debugLogs = true;
 
-    [Header("Lane Direction")]
-    public Transform forwardReference; // drag a RUNWAY forward marker / airport forward object here
-    public bool invertLanes = false;
+    [Header("Phase Management")]
+    public bool acceptSwipeInput = true;
 
-    [Header("Rotation Lock (optional)")]
-    public Transform rotationTarget;   // drag Airbus340 here
-    public bool lockYawRoll = true;
-
-    // state
     int lane = 0;
-    Vector2 startPos;
-    float startTime;
-    bool swiping;
 
-    float baseYaw;
-    float baseRoll;
-
-    Vector3 basePos;
+    Vector3 baseWorldPos;
     Vector3 lateralVel;
 
-    [Header("Bank (tilt)")]
-    public float maxBankAngle = 12f;      // how much it tilts (degrees)
-    public float bankSmoothTime = 0.15f;   // how smooth the tilt is
-    public float bankFromError = 0.03f;   // how strong the tilt reacts to lane error
-
-    float bankVel;
-    float currentBank;
-
+    bool dragging = false;
+    Vector2 dragStartScreenPos;
+    float dragStartOffset;
+    float currentOffset;
 
     void Start()
     {
         if (moveTarget == null) moveTarget = transform;
 
-        // lane 0 reference position
-        basePos = moveTarget.position;
+        baseWorldPos = moveTarget.position;
+        currentOffset = 0f;
 
-        if (rotationTarget == null)
-            rotationTarget = transform;
-
-        baseYaw = rotationTarget.localEulerAngles.y;
-        baseRoll = rotationTarget.localEulerAngles.z;
+        if (debugLogs)
+            Debug.Log("DragLaneController initialized. MoveTarget: " + moveTarget.name);
     }
 
     void Update()
     {
-        HandleSwipeInput();
+        HandleDragInput();
+        HandleKeyboardInput();
     }
 
-   void LateUpdate()
+    void LateUpdate()
     {
         if (moveTarget == null) return;
 
-        // Forward direction of the runway/world
-        Vector3 forward = forwardReference != null ? forwardReference.forward : Vector3.forward;
-        forward.y = 0f;
-        if (forward.sqrMagnitude < 0.0001f) forward = Vector3.forward;
-        forward.Normalize();
+        Vector3 right = GetLaneRight();
 
-        // Sideways direction = perpendicular to forward (force perfectly horizontal)
-        Vector3 right = Vector3.Cross(forward, Vector3.up);
+        Vector3 target = baseWorldPos + right * currentOffset;
+        target.y = moveTarget.position.y;
 
-        right.y = 0f;
-        right.Normalize();
-
-        if (invertLanes) 
-            right = -right;
-
-        // Target lane position (lock Y to the ORIGINAL lane root height)
-        Vector3 targetPos = basePos + right * (lane * laneOffset);
-        targetPos.y = basePos.y;
-
-        // Smooth move
-        Vector3 newPos = Vector3.SmoothDamp(moveTarget.position, targetPos, ref lateralVel, lateralSmoothTime);
-
-        // Hard lock Y + kill any Y velocity accumulation
-        newPos.y = basePos.y;
-        lateralVel.y = 0f;
-
-        moveTarget.position = newPos;
-
-        // ----- BANK (tilt) based on lane target (stable) -----
-        float desiredBank = -lane * maxBankAngle; // flip sign if it feels reversed
-        currentBank = Mathf.SmoothDampAngle(currentBank, desiredBank, ref bankVel, bankSmoothTime);
-
-        // When close enough, return bank to 0 smoothly
-        float distToTarget = Vector3.Distance(moveTarget.position, targetPos);
-
-        if (distToTarget < 5f)
-        currentBank = Mathf.SmoothDampAngle(currentBank, 0f, ref bankVel, bankSmoothTime);
-
-        // Apply bank ONLY to the visual (rotationTarget)
-        if (rotationTarget != null)
-        {
-            Vector3 e = rotationTarget.localEulerAngles;
-            rotationTarget.localEulerAngles = new Vector3(e.x, baseYaw, baseRoll + currentBank);
-        }
+        moveTarget.position = Vector3.SmoothDamp(
+            moveTarget.position,
+            target,
+            ref lateralVel,
+            lateralSmoothTime
+        );
     }
 
-    void HandleSwipeInput()
+    Vector3 GetLaneRight()
     {
-        // touch
+        Vector3 right;
+
+        if (forwardReference != null)
+        {
+            Vector3 fwd = Vector3.ProjectOnPlane(forwardReference.forward, Vector3.up).normalized;
+            if (fwd.sqrMagnitude < 0.0001f) fwd = Vector3.forward;
+
+            right = Vector3.Cross(Vector3.up, fwd).normalized;
+        }
+        else
+        {
+            right = Vector3.right;
+        }
+
+        if (invertLanes) right = -right;
+
+        return right;
+    }
+
+    void HandleDragInput()
+    {
+        if (!acceptSwipeInput) return;
+
+        // Ignore touches over UI
         if (Input.touchCount > 0)
         {
             Touch t = Input.GetTouch(0);
 
-            // if UI blocks you, keep commented while testing:
-            // if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(t.fingerId)) return;
-
             if (t.phase == TouchPhase.Began)
             {
-                swiping = true;
-                startPos = t.position;
-                startTime = Time.time;
+                if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(t.fingerId))
+                    return;
+
+                dragging = true;
+                dragStartScreenPos = t.position;
+                dragStartOffset = currentOffset;
+
+                if (debugLogs) Debug.Log("Touch drag started at: " + dragStartScreenPos);
             }
-            else if (swiping && (t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled))
+            else if (dragging && (t.phase == TouchPhase.Moved || t.phase == TouchPhase.Stationary))
             {
-                EvaluateSwipe(t.position);
-                swiping = false;
+                UpdateDrag(t.position);
             }
+            else if (dragging && (t.phase == TouchPhase.Ended || t.phase == TouchPhase.Canceled))
+            {
+                EndDrag();
+            }
+
             return;
         }
 
-        // mouse
-        // if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
-
+        // Mouse
         if (Input.GetMouseButtonDown(0))
         {
-            swiping = true;
-            startPos = Input.mousePosition;
-            startTime = Time.time;
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                return;
+
+            dragging = true;
+            dragStartScreenPos = Input.mousePosition;
+            dragStartOffset = currentOffset;
+
+            if (debugLogs) Debug.Log("Mouse drag started at: " + dragStartScreenPos);
         }
-        else if (swiping && Input.GetMouseButtonUp(0))
+        else if (dragging && Input.GetMouseButton(0))
         {
-            EvaluateSwipe((Vector2)Input.mousePosition);
-            swiping = false;
+            UpdateDrag((Vector2)Input.mousePosition);
+        }
+        else if (dragging && Input.GetMouseButtonUp(0))
+        {
+            EndDrag();
         }
     }
 
-    void EvaluateSwipe(Vector2 endPos)
+    void UpdateDrag(Vector2 currentScreenPos)
     {
-        float dt = Time.time - startTime;
-        if (dt > maxSwipeTime) return;
+        float deltaX = currentScreenPos.x - dragStartScreenPos.x;
 
-        Vector2 delta = endPos - startPos;
+        // Convert screen drag into world lane offset
+        float newOffset = dragStartOffset + (deltaX * dragSensitivity);
 
-        if (Mathf.Abs(delta.x) < minSwipePixels) return;
-        if (Mathf.Abs(delta.x) < Mathf.Abs(delta.y)) return;
+        float minOffset = minLane * laneOffset;
+        float maxOffset = maxLane * laneOffset;
 
-        if (delta.x > 0) MoveRight();
-        else MoveLeft();
+        currentOffset = Mathf.Clamp(newOffset, minOffset, maxOffset);
+
+        if (debugLogs)
+            Debug.Log("Dragging. deltaX=" + deltaX + " currentOffset=" + currentOffset);
+    }
+
+    void EndDrag()
+    {
+        dragging = false;
+
+        if (snapToLaneOnRelease)
+        {
+            lane = Mathf.RoundToInt(currentOffset / laneOffset);
+            lane = Mathf.Clamp(lane, minLane, maxLane);
+            currentOffset = lane * laneOffset;
+
+            if (debugLogs)
+                Debug.Log("Drag ended. Snapped to lane: " + lane);
+        }
+        else
+        {
+            lane = Mathf.RoundToInt(currentOffset / laneOffset);
+            lane = Mathf.Clamp(lane, minLane, maxLane);
+
+            if (debugLogs)
+                Debug.Log("Drag ended. Free position kept. Approx lane: " + lane);
+        }
+
+        lateralVel = Vector3.zero;
+    }
+
+    void HandleKeyboardInput()
+    {
+        if (!acceptSwipeInput) return;
+
+        if (Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.A))
+        {
+            MoveLeft();
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.D))
+        {
+            MoveRight();
+        }
     }
 
     public void MoveLeft()
     {
-        int old = lane;
         lane = Mathf.Clamp(lane - 1, minLane, maxLane);
-        if (debugLogs && lane != old) Debug.Log("Lane LEFT -> " + lane);
+        currentOffset = lane * laneOffset;
+        lateralVel = Vector3.zero;
+
+        if (debugLogs)
+            Debug.Log("MoveLeft -> lane " + lane);
     }
 
     public void MoveRight()
     {
-        int old = lane;
         lane = Mathf.Clamp(lane + 1, minLane, maxLane);
-        if (debugLogs && lane != old) Debug.Log("Lane RIGHT -> " + lane);
+        currentOffset = lane * laneOffset;
+        lateralVel = Vector3.zero;
+
+        if (debugLogs)
+            Debug.Log("MoveRight -> lane " + lane);
     }
 
-    // Call this after Start button if your objects teleport on start
     public void RecenterLanes()
     {
         if (moveTarget == null) moveTarget = transform;
-        basePos = moveTarget.position;
+
+        baseWorldPos = moveTarget.position;
         lane = 0;
+        currentOffset = 0f;
+        lateralVel = Vector3.zero;
+
+        if (debugLogs)
+            Debug.Log("RecenterLanes called. New baseWorldPos = " + baseWorldPos);
+    }
+
+    public void SetSwipeInputEnabled(bool enabled)
+    {
+        acceptSwipeInput = enabled;
     }
 }
